@@ -6672,6 +6672,23 @@ for (let flags of [['--target=es2022'], ['--target=es6'], ['--bundle', '--target
     }),
   )
 
+  // https://github.com/evanw/esbuild/issues/4570
+  tests.push(
+    test(['in.js', '--outfile=node.js'].concat(flags), {
+      'in.js': `
+        const dec = () => {}
+        class Foo {
+          @dec accessor x = 1
+          @dec static accessor y = 2
+        }
+        const x = Object.getOwnPropertyDescriptor(Foo.prototype, 'x')
+        const y = Object.getOwnPropertyDescriptor(Foo, 'y')
+        if (x.enumerable !== false || x.configurable !== true) throw 'fail: x'
+        if (y.enumerable !== false || y.configurable !== true) throw 'fail: y'
+      `,
+    }),
+  )
+
   // https://github.com/evanw/esbuild/issues/3768
   tests.push(
     test(['in.ts', '--outfile=node.js'].concat(flags), {
